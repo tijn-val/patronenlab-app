@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patronenlab app prototype v1.1 HIG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,500;6..12,700;6..12,800;6..12,900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --font:'Avenir','Avenir Next','Nunito Sans',system-ui,sans-serif;
+  --bg:#FAF9F6; --paper:#FFFFFF; --tint:#EDF6FD; --fg:#000000; --ink:#2B2822; --muted:#5F5D58; --line:#E4DED3;
+  --lijf:#9EDCF8; --lijf-ink:#0E3B52; --lijf-rim:#7DB7D2;
+  --jij:#FF8ACD; --jij-ink:#621843; --jij-rim:#D673AD;
+  --anderen:#E2FAA9; --anderen-ink:#3B4710; --anderen-rim:#BCD385;
+  --omgeving:#00AC75; --omgeving-ink:#00301F; --omgeving-rim:#007A53;
+  --krachten:#2E24C1; --krachten-ink:#FFFFFF; --krachten-rim:#1D168A;
+  --oranje:#FF3E00;
+  --action:#2E24C1; --action-fg:#FFFFFF;
+  --swipe-label:#908F88; --placeholder:#B6B4AD; --orig-alpha:.35;
+  --top:46px;
+  /* lettergroottes zoals in het ontwerp */
+  --t32:32px; --t28:28px; --t26:26px; --t25:25px; --t18:18px; --t17:17px; --t16:16px; --t15:15px; --t14:14px; --t13:13px; --t12:12px; --t11:11px; --t10:10px; --t8:8px;
+  --hit:24px;
+}
+/* ---- versie met HIG-aanpassingen ---- */
+.hig{
+  --action:#2B2822;                         /* 8: indigo alleen voor krachten */
+  --swipe-label:#6B6862;                    /* 2: 5,1:1 */
+  --placeholder:#76726B;                    /* 3: 4,7:1 */
+  --top:72px;                               /* 6: onder de statusbalk */
+  --t28:25px; --t26:25px; --t18:17px; --t16:17px; --t14:15px; --t12:13px; --t10:12px; --t8:11px;   /* 1 en 11 */
+  --hit:44px;                               /* 7 */
+  --jij-orig:#722050; --lijf-orig:#24546B; --anderen-orig:#5A6B23; --omgeving-orig:#00301F; --krachten-orig:#C9C5F2;   /* 4 */
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+[hidden]{display:none !important;}
+html,body{height:100%;}
+body{background:#E9E5DD; font-family:var(--font); color:var(--fg); display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; -webkit-font-smoothing:antialiased;}
+button{font:inherit; color:inherit; background:none; border:0; cursor:pointer;}
+input,textarea{font:inherit; color:inherit;}
+.meta{position:fixed; top:14px; left:18px; right:18px; display:flex; justify-content:space-between; align-items:center; font-size:13px; color:#5F5D58; z-index:5;}
+.meta strong{color:#2B2822; letter-spacing:.04em; text-transform:uppercase; font-weight:800;}
+.meta button{border:1px solid #D6D0C4; background:#FFF; border-radius:999px; padding:7px 14px; font-weight:700; color:#2B2822;}
+.stage{transform-origin:center center;}
+.phone{width:393px; height:852px; border-radius:54px; background:var(--bg); position:relative; overflow:hidden; box-shadow:0 0 0 10px #1F1D1A, 0 0 0 11px #3A3631, 0 30px 80px rgba(0,0,0,.25);}
+.statusbar{position:absolute; top:0; left:0; right:0; height:54px; display:flex; justify-content:space-between; align-items:center; padding:6px 34px 0 46px; font-weight:700; font-size:16px; z-index:40; pointer-events:none;}
+.island{position:absolute; top:11px; left:50%; transform:translateX(-50%); width:124px; height:36px; border-radius:20px; background:#000; z-index:41;}
+.statusbar .icons{display:flex; gap:6px; align-items:center;}
+.homebar{position:absolute; bottom:8px; left:50%; transform:translateX(-50%); width:136px; height:5px; border-radius:3px; background:#000; z-index:60; pointer-events:none;}
+.screen{position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; scrollbar-width:none; transition:opacity .22s ease, transform .22s ease;}
+.screen::-webkit-scrollbar{display:none;}
+.screen.enter{opacity:0; transform:translateX(24px);}
+.screen.enter.back{transform:translateX(-24px);}
+.pad{padding:var(--top) 37px 120px;}
+h1{font-size:var(--t32); line-height:1.08; font-weight:800; letter-spacing:-.01em;}
+.lead{font-size:var(--t16); line-height:1.5; margin-top:12px;}
+.caps{font-size:var(--t16); letter-spacing:.04em; text-transform:uppercase; font-weight:700;}
+.back{position:relative; width:var(--hit); height:var(--hit); display:flex; align-items:center; justify-content:flex-start; margin:24px 0 18px -2px;}
+.hig .back{margin-left:-12px; justify-content:center;}
+.back svg{width:18px; height:18px;}
+/* knoppen */
+.btn{height:47px; border-radius:999px; padding:0 26px; font-size:var(--t17); font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:12px;}
+.btn.primary{background:var(--action); color:var(--action-fg);}
+.btn.ghost{background:#FFF; border:1.5px solid var(--line); color:var(--ink);}
+.btn svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
+.card-start svg{stroke-width:1.6;}
+.hig .card-start svg{stroke-width:2.2;}
+/* tabbalk */
+.tabbar{position:absolute; left:20px; right:20px; bottom:30px; height:64px; background:#FFF; border:1.5px solid var(--line); border-radius:999px; display:flex; align-items:center; padding:5px; z-index:30; gap:2px;}
+.tab{flex:1; height:100%; border-radius:999px; display:flex; align-items:center; justify-content:center; gap:10px; color:var(--ink);}
+.tab svg{width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+.tab .tl{display:none; font-size:var(--t15); font-weight:800;}
+.tab.on{flex:2.4; background:var(--action); color:#FFF;}
+.tab{transition:flex .25s ease, background-color .2s ease;}
+.tab.on .tl{display:inline;}
+/* bouwstenen */
+svg.bs{overflow:visible; display:block;}
+.bs-word{font-weight:900; text-transform:uppercase; letter-spacing:.01em;}
+/* sheets */
+.scrim{position:absolute; inset:0; background:rgba(20,18,15,.35); z-index:70; opacity:0; transition:opacity .2s;}
+.scrim.show{opacity:1;}
+.sheet{position:absolute; left:0; right:0; bottom:0; background:#FFF; border-radius:28px 28px 0 0; z-index:71; padding:12px 28px 46px; transform:translateY(100%); transition:transform .28s cubic-bezier(.2,.8,.2,1); max-height:86%; overflow-y:auto;}
+.sheet.show{transform:none;}
+.grab{width:40px; height:5px; border-radius:3px; background:#DDD7CC; margin:0 auto 18px;}
+.sheet h2{font-size:var(--t25); font-weight:800; margin-bottom:10px;}
+.sheet p{font-size:var(--t16); line-height:1.5; margin-bottom:12px;}
+.sheet .row{display:flex; gap:10px; margin-top:16px;}
+.sheet .x{position:absolute; top:14px; right:16px; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;}
+.sheet .x svg{width:16px; height:16px; stroke:#2B2822; stroke-width:2.2; stroke-linecap:round;}
+.steps{list-style:none; counter-reset:s; margin:8px 0 6px;}
+.steps li{counter-increment:s; position:relative; padding-left:40px; margin-bottom:14px; font-size:var(--t16); line-height:1.45;}
+.steps li::before{content:counter(s); position:absolute; left:0; top:-2px; width:28px; height:28px; border-radius:50%; background:var(--tint); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;}
+.label{font-size:var(--t13); font-weight:800; letter-spacing:.03em; text-transform:uppercase; margin:22px 0 10px; color:var(--ink);}
+.field{width:100%; height:56px; border-radius:16px; border:2px solid var(--line); background:#FFF; padding:0 18px; font-size:var(--t18); outline:none;}
+.field:focus{border-color:var(--action);}
+textarea.field{height:120px; padding:14px 18px; resize:none; line-height:1.4;}
+.chips{display:flex; flex-wrap:wrap; gap:10px;}
+.chip{height:40px; padding:0 20px; border-radius:999px; background:#FFF; font-size:var(--t15); border:1.5px solid transparent;}
+.sheet .chip{border-color:var(--line);}
+.chip.on{background:var(--jij); border-color:var(--jij);}
+.toast{position:absolute; left:50%; top:58px; transform:translate(-50%,-12px); background:#2B2822; color:#FFF; padding:12px 18px; border-radius:999px; font-size:14px; font-weight:700; opacity:0; transition:.25s; z-index:80; white-space:nowrap; pointer-events:none;}
+.toast.show{opacity:1; transform:translate(-50%,0);}
+/* scherm-specifiek */
+.welcome-ill{margin:30px -37px 0; height:262px; background:var(--tint); position:relative; overflow:hidden; margin-left:0; margin-right:0;}
+.foot{font-size:var(--t10); font-weight:700; text-align:center; margin-top:14px;}
+.home-head{display:flex; justify-content:space-between; align-items:flex-start;}
+.avatar{width:var(--hit); height:var(--hit); position:relative; width:62px; height:62px; margin-top:-4px;}
+.avatar .who{display:none;}
+.hig .avatar .who{display:block; position:absolute; bottom:-18px; left:0; right:0; text-align:center; font-size:11px; font-weight:800;}
+.date{font-size:var(--t16); margin-top:6px;}
+.hero{margin-top:36px; background:var(--tint); border-radius:14px; height:162px; position:relative; padding:20px;}
+.hero h2{font-size:var(--t25); line-height:1.02; font-weight:800; position:relative; z-index:2;}
+.hero .btn{position:absolute; left:20px; bottom:20px; height:40px; padding:0 20px; font-size:var(--t15); gap:8px; z-index:2;}
+.hero .btn svg{width:15px; height:15px;}
+.hero .ill{position:absolute; right:-6px; top:36px;}
+.timeline{margin-top:10px;}
+.tl-item{display:flex; align-items:center; gap:16px; margin-bottom:16px; width:100%; text-align:left;}
+.tl-date{width:57px; text-align:center; font-size:var(--t16); line-height:1.05; font-weight:800; color:#5E5C57;}
+.tl-date .n{font-size:var(--t16);}
+.tl-date .nu{display:none; font-size:11px; font-weight:800; color:var(--ink); margin-top:4px;}
+.hig .tl-date .nu{display:block;}
+.tl-card{flex:1; min-height:56px; border-radius:12px; background:#FFF; padding:11px 14px; position:relative;}
+.tl-card .t{font-size:var(--t11); font-weight:800; letter-spacing:.03em; text-transform:uppercase; color:inherit;}
+.tl-card .s{font-size:var(--t12); margin-top:3px;}
+.tl-item.done .tl-card{color:#5F5D58;}
+.tl-item.now .tl-card{background:var(--tint); color:var(--ink);}
+.tl-item.next .tl-card{background:#F7FCE8; color:var(--ink);}
+.tl-item.empty .tl-card{background:#FCFCFA; color:var(--placeholder); font-style:italic;}
+.hig .tl-item.empty .tl-card{border:1.5px dashed #CFC9BE;}
+.tl-card .chk{position:absolute; right:13px; top:50%; transform:translateY(-50%); width:17px; height:17px;}
+/* check */
+.check{background:var(--tint);}
+.deck{position:relative; height:470px; margin:0 -37px; touch-action:pan-y;}
+.deck .behind{position:absolute; pointer-events:none;}
+.deck .card{position:absolute; left:50%; top:50%; width:260px; height:260px; margin:-130px 0 0 -130px; cursor:grab; touch-action:none; user-select:none;}
+.deck .card.fly{transition:transform .35s ease, opacity .35s ease;}
+.deck .card.snap{transition:transform .25s ease;}
+.deck .stamp{position:absolute; top:24px; padding:6px 12px; border-radius:10px; border:3px solid; font-weight:900; font-size:18px; letter-spacing:.05em; opacity:0; text-transform:uppercase; background:rgba(255,255,255,.85);}
+.deck .stamp.yes{left:18px; color:#1F7A4D; transform:rotate(-10deg);}
+.deck .stamp.no{right:18px; color:#B3261E; transform:rotate(10deg);}
+.arrow{position:absolute; top:50%; transform:translateY(-50%); width:var(--hit); height:var(--hit); display:flex; align-items:center; justify-content:center; color:#767A7E; z-index:3;}
+.arrow svg{width:16px; height:16px; stroke:currentColor; stroke-width:2.2; fill:none; stroke-linecap:round; stroke-linejoin:round;}
+.arrow.l{left:6px;} .arrow.r{right:6px;}
+.actions{display:flex; justify-content:center; gap:22px; margin-top:-6px;}
+.act{display:flex; flex-direction:column; align-items:center; gap:10px; width:96px;}
+.act .c{width:68px; height:68px; border-radius:50%; background:#FFF; display:flex; align-items:center; justify-content:center;}
+.act .c.small{width:56px; height:56px; margin:6px 0;}
+.act .c svg{width:22px; height:22px; stroke:var(--ink); stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round;}
+.act.yes .c{background:var(--jij);}
+.act.yes .c svg{stroke:var(--jij-ink);}
+.act span{font-size:var(--t15); font-weight:800; color:var(--swipe-label);}
+.add-link{display:flex; flex-direction:column; align-items:center; margin:26px auto 0; font-size:var(--t11); font-weight:800; gap:6px; min-height:44px;}
+.add-link svg{width:16px; height:16px; stroke:#2B2822; stroke-width:2.2; stroke-linecap:round;}
+.progress{font-size:13px; font-weight:700; color:#5F5D58; text-align:center; margin-top:4px; display:none;}
+.hig .progress{display:block;}
+.done-panel{text-align:center; padding:40px 10px;}
+.done-panel h2{font-size:var(--t28); font-weight:800; margin:20px 0 10px;}
+.done-panel p{font-size:var(--t16); line-height:1.5; margin-bottom:26px;}
+/* eigen woord */
+.preview{display:flex; justify-content:center; margin:26px 0 8px;}
+.icons{display:flex; justify-content:space-between;}
+.ico{width:46px; height:46px; border-radius:50%; background:#FFF; display:flex; align-items:center; justify-content:center; position:relative;}
+.ico svg{width:22px; height:22px; stroke:var(--ink); stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round;}
+.ico.on{background:var(--jij); box-shadow:3px 3px 0 var(--jij-rim);}
+.ico.on svg{stroke:var(--jij-ink);}
+.save-row{text-align:center; margin-top:34px;}
+.save-row .btn{min-width:150px;}
+.save-row .foot{font-size:var(--t11);}
+/* experimenten */
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:44px;}
+.exp{height:226px; border-radius:18px; padding:18px 16px; text-align:left; display:flex; flex-direction:column; justify-content:space-between; position:relative;}
+.exp h3{font-size:var(--t16); font-weight:800; line-height:1.2;}
+.exp .ring{align-self:center;}
+.exp .st{font-size:var(--t12); font-weight:700; display:flex; align-items:center; gap:10px;}
+.exp .bar{flex:1; height:5px; border-radius:3px; background:rgba(98,24,67,.25); overflow:hidden;}
+.exp .bar i{display:block; height:100%; background:var(--jij-ink);}
+.exp.new{border:2px dashed #ABA59A; align-items:center; justify-content:center; gap:14px; text-align:center;}
+.exp.new .plus{width:52px; height:52px; border-radius:50%; background:#FFF; border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center;}
+.exp.new .plus svg{width:20px; height:20px; stroke:#2B2822; stroke-width:2; stroke-linecap:round;}
+.exp.new h3{font-size:var(--t15);}
+/* experiment detail */
+.xd h1{font-size:var(--t32);}
+.xd .lead{margin-top:10px;}
+.xd .center{display:flex; justify-content:center; margin:30px 0 26px; position:relative;}
+.xd .center .txt{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-style:italic;}
+.xd .center .big{font-size:var(--t28); font-weight:800;}
+.xd .center .small{font-size:var(--t15);}
+.xd .q{font-size:var(--t13); font-weight:800; margin-bottom:10px;}
+.rate{display:flex; gap:8px;}
+.rate button{flex:1; height:48px; border-radius:999px; background:#FFF; font-size:var(--t15);}
+.days{display:flex; justify-content:space-between; margin-top:24px;}
+.day{display:flex; flex-direction:column; align-items:center; gap:6px; font-size:var(--t12); font-style:italic;}
+.day .d{width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;}
+.day .d svg{width:14px; height:14px; stroke:#FFF; stroke-width:2.6; fill:none; stroke-linecap:round; stroke-linejoin:round;}
+.belongs{margin-top:26px; width:100%; height:56px; border-radius:999px; background:#FFF; display:flex; align-items:center; padding:0 22px 0 22px; gap:14px; font-size:var(--t14);}
+.belongs .k{color:#726D61; flex:0 0 auto;}
+.belongs .w{font-weight:900; flex:1; text-align:left; display:flex; align-items:center; gap:10px; text-transform:uppercase;}
+.belongs svg.go{width:18px; height:18px; stroke:currentColor; stroke-width:2.2; fill:none; stroke-linecap:round; stroke-linejoin:round;}
+.counter{display:flex; align-items:center; justify-content:center; gap:12px; margin-top:8px;}
+/* patroon */
+.board{margin:14px -37px 0; height:510px; position:relative;}
+.board svg{width:100%; height:100%;}
+.board .hitbs{cursor:pointer;}
+.pop{position:absolute; background:#2B2822; color:#FFF; border-radius:12px; padding:10px 14px; font-size:14px; line-height:1.3; transform:translate(-50%,-100%); white-space:nowrap; z-index:5; pointer-events:none;}
+.pop small{display:block; color:#CFC9BE; font-size:12px;}
+.notice{margin:6px -20px 0; background:#F7FCE8; border-radius:22px; padding:18px 20px; display:flex; gap:12px; align-items:center;}
+.notice .tx{flex:1;}
+.notice h3{font-size:var(--t16); font-style:italic; font-weight:800;}
+.notice p{font-size:var(--t13); color:#726D61; line-height:1.4; margin-top:6px;}
+.notice .plus{width:48px; height:48px; border-radius:50%; background:#FFF; display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+.notice .plus svg{width:18px; height:18px; stroke:#2B2822; stroke-width:2.2; stroke-linecap:round;}
+.notes{margin-top:10px; list-style:none;}
+.notes li{font-size:var(--t13); color:var(--ink); padding:8px 0; border-top:1px solid #E4EDCB;}
+/* bouwstenen-overzicht */
+.bsgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px 10px; margin-top:28px;}
+.bsgrid button{display:flex; justify-content:center;}
+.subhead{font-size:var(--t13); font-weight:800; letter-spacing:.03em; text-transform:uppercase; margin:30px 0 4px; color:var(--ink);}
+.faded{opacity:.45;}
+.pulse{animation:pulse 1.2s ease 2;}
+@keyframes pulse{50%{transform:scale(1.08);}}
+@media (prefers-reduced-motion:reduce){ .screen,.sheet,.deck .card{transition:none !important;} .pulse{animation:none;} }
+</style>
+</head>
+<body class="hig">
+<div class="meta"><span><strong>Patronenlab app</strong> &nbsp;prototype v1.1 · met HIG-aanpassingen</span><button id="reset" type="button">Opnieuw beginnen</button></div>
+<div class="stage" id="stage">
+  <div class="phone" id="phone">
+    <div class="island"></div>
+    <div class="statusbar"><span>9:41</span><span class="icons">
+      <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round"><path d="M1.5 4.2a9.5 9.5 0 0 1 13 0M4 6.9a6 6 0 0 1 8 0"/><circle cx="8" cy="9.8" r="1.3" fill="#000" stroke="none"/></svg>
+      <svg width="27" height="13" viewBox="0 0 27 13"><rect x="0.5" y="0.5" width="23" height="12" rx="3.5" fill="none" stroke="#000" opacity=".4"/><rect x="2" y="2" width="20" height="9" rx="2"/><rect x="24.5" y="4.5" width="2" height="4" rx="1" opacity=".4"/></svg>
+    </span></div>
+    <div id="screens"></div>
+    <nav class="tabbar" id="tabbar" hidden></nav>
+    <div class="scrim" id="scrim" hidden></div>
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true" hidden></div>
+    <div class="toast" id="toast" role="status"></div>
+    <div class="homebar"></div>
+  </div>
+</div>
+<script>
+(function(){
+var HIG = document.body.classList.contains('hig');
+
+/* ---------------- vormen ---------------- */
+var SHAPES = {
+  cirkel: function(){ return 1; },
+  zon: function(a){ return 1 + 0.07 * Math.cos(12 * a); },
+  ster: function(a){ return 0.9 + 0.16 * Math.pow(Math.abs(Math.cos(3 * a)), 1.6); },
+  golf8: function(a){ return 1 + 0.09 * Math.cos(8 * a); },
+  bloem4: function(a){ return 1 + 0.12 * Math.cos(4 * a); },
+  klaver: function(a){ return 1 + 0.13 * Math.cos(4 * a + 0.4) + 0.04 * Math.cos(8 * a); },
+  bloem5: function(a){ return 0.82 + 0.26 * Math.pow(Math.abs(Math.cos(2.5 * a)), 0.8); },
+  spikes10: function(a){ return 1 + 0.08 * Math.cos(10 * a); }
+};
+function shapeD(name, cx, cy, r, rot){
+  var f = SHAPES[name] || SHAPES.cirkel, N = 160, d = '';
+  rot = rot || 0;
+  for (var i = 0; i < N; i++){
+    var a = i / N * Math.PI * 2, rr = r * f(a);
+    var x = cx + Math.cos(a + rot) * rr, y = cy + Math.sin(a + rot) * rr;
+    d += (i ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1);
+  }
+  return d + 'Z';
+}
+
+/* ---------------- iconen ---------------- */
+var ICON = {
+  spiraal: '<path d="M12 12.5a1.5 1.5 0 1 1 1.5-1.5c0 2.2-1.8 3.5-3.6 3.5A3.9 3.9 0 0 1 6 10.6 5.2 5.2 0 0 1 11.3 5.4 6.5 6.5 0 0 1 18 11.9a7.2 7.2 0 0 1-6.6 7.1"/>',
+  golfjes: '<path d="M3 10c2-2 3 2 5 0s3 2 5 0 3 2 5 0 2 1 3 0M3 15c2-2 3 2 5 0s3 2 5 0 3 2 5 0 2 1 3 0"/>',
+  zigzag: '<path d="M3 9l2.5-2 2.5 2 2.5-2 2.5 2 2.5-2 2.5 2 2.5-2M3 15l2.5-2 2.5 2 2.5-2 2.5 2 2.5-2 2.5 2 2.5-2"/>',
+  regen: '<path d="M7 15a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.4A3.3 3.3 0 0 1 17 15Z"/><path d="M8 18.5l-1 2M12 18.5l-1 2M16 18.5l-1 2"/>',
+  bliksem: '<path d="M13 3L5 13.5h6L10 21l8-10.5h-6Z"/>',
+  maan: '<path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10Z"/>',
+  hart: '<path d="M12 20s-7.5-4.5-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.5-7.5 10-7.5 10Z"/>',
+  huis: '<path d="M4 11l8-6.5 8 6.5M6.5 9.5V20h11V9.5"/>',
+  lach: '<circle cx="12" cy="12" r="8.5"/><path d="M8.5 13.5a4 4 0 0 0 7 0M9 9.5v.5M15 9.5v.5"/>',
+  batterij: '<rect x="3" y="7.5" width="15.5" height="9" rx="2"/><path d="M21 11v2M6.5 11v2"/>',
+  boek: '<path d="M4 5.5h6a2 2 0 0 1 2 2V19a2 2 0 0 0-2-2H4ZM20 5.5h-6a2 2 0 0 0-2 2V19a2 2 0 0 1 2-2h6Z"/>',
+  ster: '<path d="M12 3.5l2.4 5.2 5.6.6-4.2 3.8 1.2 5.6L12 15.8l-5 2.9 1.2-5.6L4 9.3l5.6-.6Z"/>'
+};
+function icon(name, size, color){
+  return '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (ICON[name] || '') + '</svg>';
+}
+var UI = {
+  arrowR: '<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  check: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  x: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  pen: '<svg viewBox="0 0 24 24"><path d="M4 20l1-4.5L15.5 5a2.1 2.1 0 0 1 3 3L8 18.5 4 20Z"/><path d="M13.5 7l3 3"/></svg>',
+  plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  chevL: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  chevR: '<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
+  cal: '<svg viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14.5" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg>',
+  stones: '<svg viewBox="0 0 24 24"><circle cx="8.5" cy="9" r="4"/><circle cx="15.5" cy="9" r="4"/><circle cx="12" cy="15.5" r="4"/></svg>',
+  net: '<svg viewBox="0 0 24 24"><circle cx="5.5" cy="6" r="2.5"/><circle cx="18.5" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 6h8M7 8l3.8 7.8M17 8l-3.8 7.8"/></svg>',
+  dashed: '<svg viewBox="0 0 24 24" stroke-dasharray="3 2.6"><circle cx="12" cy="12" r="8.5"/></svg>'
+};
+
+/* ---------------- gegevens van Sam ---------------- */
+function freshState(){
+  return {
+    screen: 'welkom', history: [],
+    checked: false, checkIndex: 0,
+    stones: [
+      { id: 'piekeren', cat: 'jij', label: 'piekeren', own: '', icon: 'spiraal', alt: ['steeds denken', 'hoofd vol', 'malen'], status: null },
+      { id: 'slapen', cat: 'lijf', label: 'slecht slapen', own: '', icon: 'maan', alt: ['wakker liggen', 'moe wakker'], status: null },
+      { id: 'ruzie', cat: 'anderen', label: 'ruzie tussen ouders', own: '', icon: 'bliksem', alt: ['gedoe thuis', 'harde stemmen'], status: null },
+      { id: 'school', cat: 'omgeving', label: 'druk op school', own: '', icon: 'boek', alt: ['toetsweek', 'te veel huiswerk'], status: null },
+      { id: 'chaos', cat: 'jij', label: 'chaos in mijn hoofd', own: '', icon: 'regen', alt: ['storm', 'warboel'], status: null },
+      { id: 'energie', cat: 'lijf', label: 'weinig energie', own: '', icon: 'batterij', alt: ['leeg', 'op'], status: null },
+      { id: 'boos', cat: 'jij', label: 'snel boos', own: '', icon: 'bliksem', alt: ['kort lontje', 'ontploffen'], status: null },
+      { id: 'humor', cat: 'krachten', label: 'humor', own: '', icon: 'lach', alt: ['grappen maken', 'lachen'], status: null },
+      { id: 'oma', cat: 'krachten', label: 'oma', own: '', icon: 'hart', alt: ['bij oma', 'oma bellen'], status: null }
+    ],
+    experiments: [
+      { id: 'tel', title: 'Telefoon om 10 uur weg', text: 'Om tien uur gaat mijn telefoon in de kamer uit. Zo ga ik minder malen in bed.', cat: 'jij', shape: 'golf8', kind: 'days', day: 5, of: 7, rating: 'Ging goed', stone: 'piekeren' },
+      { id: 'oma', title: 'Oma bellen als ik maal', text: 'Als ik merk dat ik maal, bel ik oma. Even praten helpt om mijn hoofd leeg te maken.', cat: 'krachten', shape: 'bloem4', kind: 'count', count: 2, stone: 'oma' },
+      { id: 'buiten', title: 'Na school eerst naar buiten', text: 'Na school ga ik eerst een rondje lopen of fietsen, voordat ik aan huiswerk begin.', cat: 'anderen', shape: 'spikes10', kind: 'planned', start: 'ma 8 dec', stone: 'energie' }
+    ],
+    notes: [],
+    pendingWord: null
+  };
+}
+var S = freshState();
+function stone(id){ return S.stones.filter(function(s){ return s.id === id; })[0]; }
+function word(s){ return (s.own || s.label); }
+
+/* ---------------- bouwsteen tekenen ---------------- */
+function wrapWords(t, max){
+  var ws = t.toUpperCase().split(' '), lines = [], cur = '';
+  ws.forEach(function(w){ if ((cur + ' ' + w).trim().length > max && cur){ lines.push(cur); cur = w; } else cur = (cur + ' ' + w).trim(); });
+  if (cur) lines.push(cur);
+  return lines;
+}
+/* opts: r, shape, iconSize, wordSize, showOrig, origSize, dashed, maxChars */
+function stoneSVG(s, o){
+  o = o || {};
+  var r = o.r || 60, pad = 6, size = r * 2 + pad * 2, c = r + pad;
+  var fill = 'var(--' + s.cat + ')', rim = 'var(--' + s.cat + '-rim)', ink = 'var(--' + s.cat + '-ink)';
+  var shape = o.shape || 'cirkel';
+  var h = '<svg class="bs" width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">';
+  h += '<path d="' + shapeD(shape, c + r * 0.03, c + r * 0.035, r) + '" fill="' + rim + '"/>';
+  h += '<path d="' + shapeD(shape, c, c, r) + '" fill="' + fill + '"/>';
+  if (o.dashed) h += '<circle cx="' + c + '" cy="' + c + '" r="' + (r * 0.8) + '" fill="none" stroke="' + ink + '" stroke-width="1.4" stroke-dasharray="5 4" opacity=".75"/>';
+  var lines = wrapWords(word(s), o.maxChars || 11), ws = o.wordSize || 14, lh = ws * 1.08;
+  var hasOrig = o.showOrig && s.own && s.own.toLowerCase() !== s.label.toLowerCase();
+  var os = o.origSize || 10;
+  var iconH = o.iconSize ? o.iconSize + 8 : 0;
+  var total = iconH + lines.length * lh + (hasOrig ? os + 8 : 0);
+  var y = c - total / 2;
+  if (o.iconSize){
+    h += '<g transform="translate(' + (c - o.iconSize / 2) + ',' + y + ')">' + icon(s.icon, o.iconSize, ink).replace('<svg', '<svg x="0" y="0"') + '</g>';
+    y += iconH;
+  }
+  lines.forEach(function(l, i){
+    h += '<text class="bs-word" x="' + c + '" y="' + (y + lh * (i + 0.8)) + '" text-anchor="middle" font-size="' + ws + '" fill="' + ink + '">' + esc(l) + '</text>';
+  });
+  y += lines.length * lh;
+  if (hasOrig){
+    var origFill = HIG ? 'var(--' + s.cat + '-orig)' : ink;
+    var op = HIG ? 1 : 0.35;
+    var weight = HIG ? 500 : 900;
+    h += '<text x="' + c + '" y="' + (y + os + 4) + '" text-anchor="middle" font-size="' + os + '" font-weight="' + weight + '" fill="' + origFill + '" opacity="' + op + '" style="text-transform:uppercase;letter-spacing:.03em">' + esc(s.label.toUpperCase()) + '</text>';
+  }
+  return h + '</svg>';
+}
+function esc(t){ return String(t).replace(/[&<>"]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+/* ---------------- navigatie ---------------- */
+var screensEl = document.getElementById('screens'), tabbar = document.getElementById('tabbar');
+var TABS = [ { id: 'home', l: 'Gesprekken', i: UI.cal }, { id: 'stenen', l: 'Bouwstenen', i: UI.stones }, { id: 'patroon', l: 'Patroon', i: UI.net }, { id: 'experimenten', l: 'Experimenten', i: UI.dashed } ];
+var TAB_SCREENS = { home: 1, stenen: 1, patroon: 1, experimenten: 1 };
+function go(name, params, opts){
+  opts = opts || {};
+  if (!opts.replace && !opts.back) S.history.push({ screen: S.screen, params: S.params });
+  S.screen = name; S.params = params || {};
+  render(opts.back);
+}
+function back(){
+  var prev = S.history.pop();
+  if (!prev) return go('home', {}, { replace: true });
+  S.screen = prev.screen; S.params = prev.params || {};
+  render(true);
+}
+function tabTo(id){ S.history = []; go(id, {}, { replace: true }); }
+function renderTabs(){
+  tabbar.hidden = !TAB_SCREENS[S.screen];
+  if (tabbar.hidden) return;
+  tabbar.innerHTML = TABS.map(function(t){
+    var on = t.id === S.screen;
+    return '<button class="tab' + (on ? ' on' : '') + '" data-tab="' + t.id + '" aria-label="' + t.l + '"' + (on ? ' aria-current="page"' : '') + '>' + t.i + '<span class="tl">' + t.l + '</span></button>';
+  }).join('');
+}
+tabbar.addEventListener('click', function(e){ var b = e.target.closest('[data-tab]'); if (b) tabTo(b.dataset.tab); });
+
+function render(isBack){
+  closeSheet(true);
+  var el = document.createElement('div');
+  el.className = 'screen enter' + (isBack ? ' back' : '');
+  var fn = SCREENS[S.screen];
+  el.innerHTML = fn.html();
+  if (fn.cls) el.classList.add(fn.cls);
+  var old = screensEl.firstChild;
+  screensEl.appendChild(el);
+  if (old) old.remove();
+  requestAnimationFrame(function(){ el.classList.remove('enter', 'back'); });
+  if (fn.wire) fn.wire(el);
+  renderTabs();
+}
+function backBtn(){ return '<button class="back" data-act="back" aria-label="Terug">' + UI.chevL + '</button>'; }
+
+/* ---------------- sheets en meldingen ---------------- */
+var sheet = document.getElementById('sheet'), scrim = document.getElementById('scrim');
+function openSheet(html, wire){
+  sheet.innerHTML = '<div class="grab"></div><button class="x" data-close aria-label="Sluiten">' + UI.x + '</button>' + html;
+  sheet.hidden = false; scrim.hidden = false;
+  requestAnimationFrame(function(){ sheet.classList.add('show'); scrim.classList.add('show'); });
+  sheet.querySelectorAll('[data-close]').forEach(function(b){ b.addEventListener('click', function(){ closeSheet(); }); });
+  if (wire) wire(sheet);
+}
+function closeSheet(instant){
+  sheet.classList.remove('show'); scrim.classList.remove('show');
+  if (instant){ sheet.hidden = true; scrim.hidden = true; return; }
+  setTimeout(function(){ if (!sheet.classList.contains('show')){ sheet.hidden = true; scrim.hidden = true; } }, 280);
+}
+scrim.addEventListener('click', function(){ closeSheet(); });
+var toastT;
+function toast(t){ var el = document.getElementById('toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function(){ el.classList.remove('show'); }, 2200); }
+
+/* ---------------- schermen ---------------- */
+var SCREENS = {};
+
+SCREENS.welkom = {
+  html: function(){
+    return '<div class="pad" style="padding-bottom:40px; min-height:100%; display:flex; flex-direction:column;">' +
+      '<h1>Welkom bij het<br>patronenlab</h1>' +
+      '<div class="welcome-ill">' + welcomeIll() + '</div>' +
+      '<p class="lead" style="margin-top:24px">Lotte nodigt je uit om samen te ontdekken waar je bent vastgelopen. Niet door je in een hokje te stoppen, maar door naar jouw verhaal te luisteren. Jij weet zelf het best hoe het voor jou is.</p>' +
+      '<div style="flex:1"></div>' +
+      '<div style="display:flex; gap:22px;"><button class="btn ghost" style="flex:1" data-act="uitleg">Meer uitleg</button><button class="btn primary" style="flex:1" data-act="start">Start ' + UI.arrowR + '</button></div>' +
+      '<p class="foot" style="' + (HIG ? 'margin-bottom:28px' : 'margin-bottom:-10px') + '">Je ouders krijgen ook een uitnodiging</p></div>';
+  },
+  wire: function(el){
+    on(el, 'start', function(){ S.history = []; go('home', {}, { replace: true }); });
+    on(el, 'uitleg', function(){
+      openSheet('<h2>Zo werkt het patronenlab</h2><p>In een paar gesprekken ontdek je samen met Lotte hoe dingen in je leven met elkaar samenhangen.</p>' +
+        '<ol class="steps"><li>Je kiest thuis bouwstenen: dingen die nu spelen, en dingen die je helpen.</li><li>In gesprek 2 leg je ze samen met Lotte neer en maak je er een patroon van.</li><li>Daarna probeer je kleine dingen uit: tiny experiments. Zo zie je wat helpt.</li></ol>' +
+        '<p>Je ouders doen ook mee, maar jouw verhaal staat voorop.</p><div class="row"><button class="btn primary" style="flex:1" data-close>Duidelijk</button></div>');
+    });
+  }
+};
+function welcomeIll(){
+  return '<svg width="319" height="262" viewBox="0 0 319 262" style="position:absolute;left:50%;transform:translateX(-50%)">' +
+    '<path d="' + shapeD('bloem5', 150, 82, 64, 0.5) + '" fill="#00AC75"/>' +
+    '<circle cx="128" cy="62" r="44" fill="#2E24C1" style="mix-blend-mode:multiply"/>' +
+    '<path d="M125 122c-6 24 4 44 30 50" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round"/><path d="M147 164l9 8-11 4" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<circle cx="167" cy="196" r="46" fill="none" stroke="#000" stroke-width="1.5" stroke-dasharray="7 6"/>' +
+    '<circle cx="223" cy="170" r="39" fill="#FF8ACD" style="mix-blend-mode:multiply"/>' +
+    '<circle cx="104" cy="288" r="40" fill="#FF3E00"/></svg>';
+}
+
+SCREENS.home = {
+  html: function(){
+    var heroTitle = S.checked ? 'Je bouwstenen<br>zijn gecheckt' : 'Check je<br>bouwstenen';
+    var heroBtn = S.checked ? 'Bekijk ze' : 'Start';
+    var it = [
+      { cls: 'done', d: '<span class="n">12</span><br>nov', t: 'Uitleg over patronenlab', s: 'met jou en je ouders', info: 'uitleg' },
+      { cls: 'done', d: '<span class="n">20</span><br>nov', t: 'Gesprek 1 - levenslijnen', s: 'met je ouders en Lotte', info: 'g1' },
+      { cls: S.checked ? 'done' : 'now', d: S.checked ? '<span class="n">27</span><br>nov' : '<svg width="19" height="19" viewBox="0 0 24 24"><path d="' + shapeD('spikes10', 12, 12, 9.5) + '" fill="#000"/></svg><span class="nu">nu</span>', t: 'Thuis - bouwstenen checken', s: 'thuis, op je eigen tempo', info: 'check' },
+      { cls: 'next' + (S.checked ? ' now' : ''), d: '<span class="n">4</span><br>dec' + (S.checked ? '<span class="nu">straks</span>' : ''), t: 'Gesprek 2 - patroon bouwen', s: 'do 15:30 - met Lotte', info: 'g2' },
+      { cls: 'empty', d: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8A867E" stroke-width="1.6" stroke-dasharray="3 2.6"><circle cx="12" cy="12" r="9"/></svg>', t: 'Tiny experiment', s: '', info: 'tiny' }
+    ];
+    return '<div class="pad"><div class="home-head"><div><h1>Hoi Sam.</h1><p class="date">do 27 november</p></div>' +
+      '<button class="avatar" data-act="avatar" aria-label="Jij, profiel en instellingen"><svg width="62" height="62" viewBox="0 0 62 62"><circle cx="32.5" cy="32.5" r="29" fill="#1D168A"/><circle cx="31" cy="31" r="29" fill="#2E24C1"/><rect x="24" y="27" width="5" height="9" rx="2.5" fill="#FFF"/><rect x="33" y="27" width="5" height="9" rx="2.5" fill="#FFF"/></svg><span class="who">Jij</span></button></div>' +
+      '<div class="hero"><h2>' + heroTitle + '</h2><button class="btn primary card-start" data-act="check">' + heroBtn + ' ' + UI.arrowR + '</button>' +
+      '<svg class="ill" width="140" height="120" viewBox="0 0 140 120"><path d="' + shapeD('klaver', 46, 64, 34, 0.3) + '" fill="#BCD385" transform="translate(2,3)"/><path d="' + shapeD('klaver', 46, 64, 34, 0.3) + '" fill="#E2FAA9"/>' +
+      '<path d="' + shapeD('ster', 74, 40, 34) + '" fill="#D673AD" transform="translate(2,3)"/><path d="' + shapeD('ster', 74, 40, 34) + '" fill="#FF8ACD"/>' +
+      '<path d="' + shapeD('golf8', 100, 76, 34, 0.2) + '" fill="#1D168A" transform="translate(2,3)"/><path d="' + shapeD('golf8', 100, 76, 34, 0.2) + '" fill="#2E24C1"/></svg></div>' +
+      '<p class="caps" style="margin:40px 0 18px">Jouw gesprekken</p><div class="timeline">' +
+      it.map(function(x){
+        return '<button class="tl-item ' + x.cls + '" data-info="' + x.info + '"><div class="tl-date">' + x.d + '</div><div class="tl-card"><div class="t">' + x.t + '</div>' + (x.s ? '<div class="s">' + x.s + '</div>' : '') +
+          (x.cls.indexOf('done') > -1 ? '<svg class="chk" viewBox="0 0 18 18"><circle cx="9" cy="9" r="8.5" fill="#615ACF"/><path d="M5.2 9.3l2.5 2.5 5-5" fill="none" stroke="#FFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '') + '</div></button>';
+      }).join('') + '</div></div>';
+  },
+  wire: function(el){
+    on(el, 'check', function(){ if (S.checked) tabTo('stenen'); else { S.checkIndex = firstOpen(); go('check'); } });
+    on(el, 'avatar', function(){
+      if (!HIG) return;
+      openSheet('<h2>Jij</h2><p>Sam, 15 jaar</p><div class="label">Meldingen</div><p>Herinnering voor je experimenten: elke avond om 21:30.</p><div class="label">Wie ziet wat</div><p>Lotte ziet je bouwstenen en je patroon. Je ouders zien alleen wat je samen in een gesprek deelt.</p><div class="row"><button class="btn ghost" style="flex:1" data-close>Sluiten</button></div>');
+    });
+    el.querySelectorAll('[data-info]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var k = b.dataset.info;
+        if (k === 'check') { if (!S.checked){ S.checkIndex = firstOpen(); go('check'); } else tabTo('stenen'); return; }
+        if (k === 'tiny') return tabTo('experimenten');
+        var T = {
+          uitleg: ['Uitleg over patronenlab', 'Op 12 november kreeg je met je ouders uitleg over hoe het patronenlab werkt.'],
+          g1: ['Gesprek 1 - levenslijnen', 'Op 20 november tekende je samen met je ouders en Lotte je levenslijn. Daaruit kwamen je eerste bouwstenen.'],
+          g2: ['Gesprek 2 - patroon bouwen', 'Donderdag 4 december om 15:30 bij Lotte. Jullie leggen je bouwstenen neer en zoeken samen hoe ze met elkaar samenhangen. Je ouders zijn er het laatste half uur bij.']
+        }[k];
+        openSheet('<h2>' + T[0] + '</h2><p>' + T[1] + '</p><div class="row"><button class="btn ghost" style="flex:1" data-close>Sluiten</button></div>');
+      });
+    });
+  }
+};
+function firstOpen(){ for (var i = 0; i < S.stones.length; i++) if (!S.stones[i].status) return i; return 0; }
+
+SCREENS.check = {
+  cls: 'check',
+  html: function(){
+    var openLeft = S.stones.filter(function(s){ return !s.status; }).length;
+    if (!openLeft){
+      return '<div class="pad">' + backBtn() + '<div class="done-panel"><svg width="150" height="130" viewBox="0 0 150 130"><path d="' + shapeD('zon', 56, 70, 44) + '" fill="#E2FAA9"/><path d="' + shapeD('ster', 96, 56, 42) + '" fill="#FF8ACD" style="mix-blend-mode:multiply"/></svg>' +
+        '<h2>Klaar, goed gedaan</h2><p>Je hebt al je bouwstenen gecheckt. Lotte neemt ze mee naar gesprek 2 op 4 december.</p>' +
+        '<button class="btn primary" data-act="home">Naar home ' + UI.check + '</button></div></div>';
+    }
+    var idx = S.checkIndex, s = S.stones[idx];
+    var nexts = [], i = idx + 1;
+    while (nexts.length < 2 && i !== idx){ if (i >= S.stones.length) i = 0; if (i === idx) break; if (!S.stones[i].status) nexts.push(S.stones[i]); i++; }
+    var done = S.stones.filter(function(x){ return x.status; }).length;
+    var behind = '';
+    if (nexts[0]) behind += '<div class="behind" style="right:4px; top:68px">' + stoneSVG(nexts[0], { r: 116, shape: 'spikes10', wordSize: 0.01 }).replace(/<text[^]*?<\/text>/g, '') + '</div>';
+    if (nexts[1]) behind += '<div class="behind" style="left:6px; top:44px">' + stoneSVG(nexts[1], { r: 104, shape: 'golf8', wordSize: 0.01 }).replace(/<text[^]*?<\/text>/g, '') + '</div>';
+    return '<div class="pad" style="padding-bottom:40px">' + backBtn() + '<h1>Klopt dit nog?</h1><p class="lead">Swipe naar rechts als het klopt, naar links als het niet meer past.</p>' +
+      '<div class="deck" id="deck">' + behind +
+      '<button class="arrow l" data-act="prev" aria-label="Vorige bouwsteen">' + UI.chevL + '</button><button class="arrow r" data-act="next" aria-label="Volgende bouwsteen"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>' +
+      '<div class="card" id="card" role="group" aria-label="' + esc(word(s)) + '">' + stoneSVG(s, { r: 124, iconSize: 34, wordSize: 30, maxChars: 10, showOrig: true, origSize: 13 }) +
+      '<span class="stamp yes">Klopt</span><span class="stamp no">Past niet</span></div></div>' +
+      '<p class="progress">' + (done + 1) + ' van ' + S.stones.length + '</p>' +
+      '<div class="actions"><button class="act" data-act="no"><span class="c">' + UI.x + '</span><span>Past niet</span></button>' +
+      '<button class="act" data-act="own"><span class="c small">' + UI.pen + '</span><span>Eigen woord</span></button>' +
+      '<button class="act yes" data-act="yes"><span class="c">' + UI.check + '</span><span>Klopt</span></button></div>' +
+      '<button class="add-link" data-act="add">' + UI.plus + 'Mis je iets? Voeg een bouwsteen toe</button></div>';
+  },
+  wire: function(el){
+    on(el, 'back', back);
+    on(el, 'home', function(){ S.history = []; go('home', {}, { replace: true }); });
+    if (!S.stones.some(function(x){ return !x.status; })) return;
+    var card = el.querySelector('#card'), s = S.stones[S.checkIndex];
+    function decide(dir){
+      s.status = dir > 0 ? 'klopt' : 'past-niet';
+      card.classList.add('fly');
+      card.style.transform = 'translateX(' + (dir * 420) + 'px) rotate(' + (dir * 24) + 'deg)';
+      card.style.opacity = '0';
+      setTimeout(function(){
+        if (!S.stones.some(function(x){ return !x.status; })) S.checked = true;
+        S.checkIndex = nextOpen(S.checkIndex, 1);
+        go('check', {}, { replace: true });
+      }, 300);
+    }
+    on(el, 'yes', function(){ decide(1); });
+    on(el, 'no', function(){ decide(-1); });
+    on(el, 'own', function(){ go('woord', { id: s.id, from: 'check' }); });
+    on(el, 'next', function(){ S.checkIndex = nextOpen(S.checkIndex, 1); go('check', {}, { replace: true }); });
+    on(el, 'prev', function(){ S.checkIndex = nextOpen(S.checkIndex, -1); go('check', {}, { replace: true, back: true }); });
+    on(el, 'add', addStoneSheet);
+    // slepen
+    var x0 = null, dx = 0, yes = card.querySelector('.stamp.yes'), no = card.querySelector('.stamp.no');
+    card.addEventListener('pointerdown', function(e){ x0 = e.clientX; dx = 0; card.setPointerCapture(e.pointerId); card.classList.remove('snap'); });
+    card.addEventListener('pointermove', function(e){
+      if (x0 == null) return;
+      var sc = currentScale();
+      dx = (e.clientX - x0) / sc;
+      card.style.transform = 'translateX(' + dx + 'px) rotate(' + (dx / 14) + 'deg)';
+      yes.style.opacity = Math.max(0, Math.min(1, dx / 90));
+      no.style.opacity = Math.max(0, Math.min(1, -dx / 90));
+    });
+    function up(){
+      if (x0 == null) return; x0 = null;
+      if (Math.abs(dx) > 90) return decide(dx > 0 ? 1 : -1);
+      card.classList.add('snap'); card.style.transform = ''; yes.style.opacity = 0; no.style.opacity = 0;
+    }
+    card.addEventListener('pointerup', up); card.addEventListener('pointercancel', up);
+  }
+};
+function nextOpen(from, dir){
+  var n = S.stones.length;
+  for (var k = 1; k <= n; k++){ var i = (from + dir * k + n * 2) % n; if (!S.stones[i].status) return i; }
+  return from;
+}
+function addStoneSheet(){
+  var cats = [['jij', 'Jij'], ['lijf', 'Lijf'], ['anderen', 'Anderen'], ['omgeving', 'Omgeving'], ['krachten', 'Krachten']], pick = 'jij';
+  openSheet('<h2>Bouwsteen toevoegen</h2><p>Wat mis je nog? Schrijf het op in je eigen woorden.</p><input class="field" id="nw" placeholder="bijvoorbeeld: gamen tot laat" maxlength="28">' +
+    '<div class="label">Waar hoort het bij?</div><div class="chips" id="cats">' + cats.map(function(c){ return '<button class="chip" data-c="' + c[0] + '" style="border-color:var(--line)">' + c[1] + '</button>'; }).join('') + '</div>' +
+    '<div class="row"><button class="btn primary" style="flex:1" id="addok">Toevoegen ' + UI.check + '</button></div>', function(sh){
+    var chips = sh.querySelectorAll('[data-c]');
+    function mark(){ chips.forEach(function(c){ var on = c.dataset.c === pick; c.style.background = on ? 'var(--' + pick + ')' : '#FFF'; c.style.color = on ? 'var(--' + pick + '-ink)' : ''; c.setAttribute('aria-pressed', on); }); }
+    chips.forEach(function(c){ c.addEventListener('click', function(){ pick = c.dataset.c; mark(); }); });
+    mark();
+    sh.querySelector('#addok').addEventListener('click', function(){
+      var v = sh.querySelector('#nw').value.trim();
+      if (!v){ sh.querySelector('#nw').focus(); return; }
+      var id = 'eigen' + Date.now();
+      S.stones.push({ id: id, cat: pick, label: v.toLowerCase(), own: '', icon: 'ster', alt: [], status: 'klopt' });
+      closeSheet(); toast('Toegevoegd: ' + v);
+      if (S.screen === 'stenen') render();
+    });
+  });
+}
+
+SCREENS.woord = {
+  cls: 'check',
+  html: function(){
+    var s = stone(S.params.id);
+    if (S.pendingWord == null) S.pendingWord = { own: s.own || s.label, icon: s.icon };
+    var p = S.pendingWord, tmp = Object.assign({}, s, { own: p.own, icon: p.icon });
+    var icons = ['spiraal', 'zigzag', 'golfjes', 'regen', 'bliksem', 'maan'];
+    if (icons.indexOf(s.icon) < 0) icons[5] = s.icon;
+    return '<div class="pad" style="padding-bottom:40px">' + backBtn() + '<h1>In jouw woorden</h1><p class="lead">Hoe zou jij dit zelf noemen?<br>Jouw woord komt op de bouwsteen</p>' +
+      '<div class="preview" id="prev">' + stoneSVG(tmp, { r: 84, iconSize: 26, wordSize: 26, maxChars: 10, showOrig: true, origSize: 12 }) + '</div>' +
+      '<div class="label">Hoe noem jij dit?</div><input class="field" id="ownw" value="' + esc(p.own) + '" maxlength="24" autocomplete="off">' +
+      (s.alt.length ? '<div class="label">Anderen noemen het ook</div><div class="chips">' + s.alt.map(function(a){ return '<button class="chip' + (a === p.own ? ' on' : '') + '" data-alt="' + esc(a) + '" style="' + (a === p.own ? 'background:var(--' + s.cat + ');border-color:var(--' + s.cat + ');color:var(--' + s.cat + '-ink)' : '') + '">' + esc(a) + '</button>'; }).join('') + '</div>' : '') +
+      '<div class="label">Kies een icoon</div><div class="icons">' + icons.map(function(n){ return '<button class="ico' + (n === p.icon ? ' on' : '') + '" data-ico="' + n + '" aria-label="Icoon ' + n + '" aria-pressed="' + (n === p.icon) + '" style="' + (n === p.icon ? 'background:var(--' + s.cat + ');box-shadow:3px 3px 0 var(--' + s.cat + '-rim)' : '') + '">' + icon(n, 22, n === p.icon ? 'var(--' + s.cat + '-ink)' : '#2B2822') + '</button>'; }).join('') + '</div>' +
+      '<div class="save-row"><button class="btn primary" data-act="save">Opslaan ' + UI.check + '</button><p class="foot">Je kunt dit later altijd nog aanpassen</p></div></div>';
+  },
+  wire: function(el){
+    var s = stone(S.params.id);
+    on(el, 'back', function(){ S.pendingWord = null; back(); });
+    var input = el.querySelector('#ownw');
+    function refresh(){
+      var tmp = Object.assign({}, s, { own: S.pendingWord.own, icon: S.pendingWord.icon });
+      el.querySelector('#prev').innerHTML = stoneSVG(tmp, { r: 84, iconSize: 26, wordSize: 26, maxChars: 10, showOrig: true, origSize: 12 });
+    }
+    input.addEventListener('input', function(){ S.pendingWord.own = input.value; refresh(); });
+    el.querySelectorAll('[data-alt]').forEach(function(b){ b.addEventListener('click', function(){ S.pendingWord.own = b.dataset.alt; var y = el.scrollTop; render(); screensEl.firstChild.scrollTop = y; }); });
+    el.querySelectorAll('[data-ico]').forEach(function(b){ b.addEventListener('click', function(){ S.pendingWord.icon = b.dataset.ico; var y = el.scrollTop; render(); screensEl.firstChild.scrollTop = y; }); });
+    on(el, 'save', function(){
+      var v = S.pendingWord.own.trim();
+      s.own = v && v.toLowerCase() !== s.label.toLowerCase() ? v.toLowerCase() : '';
+      s.icon = S.pendingWord.icon;
+      S.pendingWord = null;
+      toast('Opgeslagen');
+      back();
+    });
+  }
+};
+/* render() zonder history-push voor de keuzes op het woordscherm */
+
+SCREENS.stenen = {
+  html: function(){
+    var ok = S.stones.filter(function(s){ return s.status !== 'past-niet'; }), weg = S.stones.filter(function(s){ return s.status === 'past-niet'; });
+    function cell(s, cls){ return '<button data-stone="' + s.id + '" class="' + (cls || '') + '" aria-label="' + esc(word(s)) + '">' + stoneSVG(s, { r: 46, wordSize: 11, maxChars: 9, showOrig: true, origSize: HIG ? 11 : 8, iconSize: 0 }) + '</button>'; }
+    return '<div class="pad"><h1>Jouw bouwstenen</h1><p class="lead">' + (S.checked ? 'Tik op een bouwsteen om je eigen woord of icoon te kiezen.' : 'Je hebt ze nog niet allemaal gecheckt.') + '</p>' +
+      (S.checked ? '' : '<button class="btn primary" style="margin-top:18px" data-act="check">Klopt dit nog? ' + UI.arrowR + '</button>') +
+      '<div class="bsgrid">' + ok.map(function(s){ return cell(s); }).join('') + '</div>' +
+      (weg.length ? '<p class="subhead">Past niet meer</p><div class="bsgrid" style="margin-top:12px">' + weg.map(function(s){ return cell(s, 'faded'); }).join('') + '</div>' : '') +
+      '<button class="add-link" data-act="add" style="margin-top:30px">' + UI.plus + 'Voeg een bouwsteen toe</button></div>';
+  },
+  wire: function(el){
+    on(el, 'check', function(){ S.checkIndex = firstOpen(); go('check'); });
+    on(el, 'add', addStoneSheet);
+    el.querySelectorAll('[data-stone]').forEach(function(b){
+      b.addEventListener('click', function(){
+        var s = stone(b.dataset.stone);
+        if (s.status === 'past-niet'){
+          openSheet('<h2>' + esc(word(s)) + '</h2><p>Je zei dat deze bouwsteen niet meer past. Wil je hem terugzetten?</p><div class="row"><button class="btn ghost" style="flex:1" data-close>Laat maar</button><button class="btn primary" style="flex:1" id="terug">Terugzetten</button></div>', function(sh){
+            sh.querySelector('#terug').addEventListener('click', function(){ s.status = 'klopt'; closeSheet(); render(); });
+          });
+          return;
+        }
+        go('woord', { id: s.id, from: 'stenen' });
+      });
+    });
+  }
+};
+
+/* patroon: posities uit het ontwerp (in punten van het scherm) */
+var BOARD = [
+  { id: 'piekeren', x: 209, y: 206, r: 44, dashed: true },
+  { id: 'ruzie', x: 73, y: 284, r: 44 },
+  { id: 'chaos', x: 241, y: 343, r: 44 },
+  { id: 'slapen', x: 102, y: 390, r: 44 },
+  { id: 'school', x: 337, y: 178, r: 44 },
+  { id: 'energie', x: 338, y: 484, r: 44 },
+  { id: 'humor', x: 62, y: 512, r: 44 },
+  { id: 'oma', x: 152, y: 584, r: 40 },
+  { id: 'boos', x: 253, y: 572, r: 40 }
+];
+var LINES = [ ['school', 'piekeren', -0.35], ['ruzie', 'piekeren', -0.35], ['piekeren', 'chaos', 0.35], ['chaos', 'slapen', 0.3], ['slapen', 'energie', -0.25], ['energie', 'boos', 0.4] ];
+function lineD(a, b, bend){
+  var dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L;
+  var sx = a.x + ux * (a.r + 10), sy = a.y + uy * (a.r + 10), ex = b.x - ux * (b.r + 12), ey = b.y - uy * (b.r + 12);
+  var mx = (sx + ex) / 2 - uy * bend * (L - a.r - b.r), my = (sy + ey) / 2 + ux * bend * (L - a.r - b.r);
+  return 'M' + sx.toFixed(1) + ' ' + sy.toFixed(1) + ' Q ' + mx.toFixed(1) + ' ' + my.toFixed(1) + ' ' + ex.toFixed(1) + ' ' + ey.toFixed(1);
+}
+SCREENS.patroon = {
+  html: function(){
+    var hl = S.params.highlight;
+    var dots = '<pattern id="dots" width="21" height="21" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.3" fill="#D8D2C6"/></pattern>';
+    var svg = '<svg viewBox="0 120 393 510" preserveAspectRatio="xMidYMin meet"><defs>' + dots + '<marker id="ah" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1l6 4-6 4" fill="none" stroke="#6E6A62" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>' +
+      '<rect x="0" y="120" width="393" height="510" fill="url(#dots)"/>' +
+      '<rect x="22" y="148" width="274" height="292" rx="20" fill="#FAF9F6" fill-opacity=".85" stroke="#B5B0A6" stroke-width="1.4"/>' +
+      '<text x="38" y="171" font-size="11" font-style="italic" font-weight="800" fill="#2B2822" letter-spacing=".04em">THUIS, \'S AVONDS</text>';
+    function B(id){ return BOARD.filter(function(x){ return x.id === id; })[0]; }
+    LINES.forEach(function(l){ var a = B(l[0]), b = B(l[1]); if (stone(a.id).status === 'past-niet' || stone(b.id).status === 'past-niet') return; svg += '<path d="' + lineD(a, b, l[2]) + '" fill="none" stroke="#6E6A62" stroke-width="1.6" stroke-linecap="round" marker-end="url(#ah)"/>'; });
+    BOARD.forEach(function(b){
+      var s = stone(b.id); if (!s || s.status === 'past-niet') return;
+      var inner = stoneSVG(s, { r: b.r, wordSize: HIG ? 11 : (b.id === 'piekeren' ? 13 : 11), maxChars: 9, showOrig: true, origSize: HIG ? 11 : 8, dashed: b.dashed });
+      var size = b.r * 2 + 12;
+      svg += '<g class="hitbs" data-b="' + b.id + '" transform="translate(' + (b.x - size / 2) + ',' + (b.y - size / 2) + ')"><g class="' + (hl === b.id ? 'pulse' : '') + '" style="transform-box:fill-box; transform-origin:center">' + inner.replace('<svg class="bs"', '<svg') + '</g></g>';
+    });
+    svg += '</svg>';
+    return '<div class="pad"><h1>Jouw patroon</h1><p class="lead" style="margin-top:8px">Bijgewerkt in gesprek 2 - 4 dec</p><div class="board" id="board">' + svg + '</div>' +
+      '<div class="notice"><div class="tx"><h3>Wat valt je op?</h3><p>Schrijf het op, dan nemen jullie het mee naar het volgende gesprek.</p>' +
+      (S.notes.length ? '<ul class="notes">' + S.notes.map(function(n){ return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>' : '') + '</div><button class="plus" data-act="note" aria-label="Schrijf op wat je opvalt">' + UI.plus + '</button></div></div>';
+  },
+  wire: function(el){
+    on(el, 'note', function(){
+      openSheet('<h2>Wat valt je op?</h2><p>Bijvoorbeeld een kring die steeds terugkomt, of iets wat helpt.</p><textarea class="field" id="nt" placeholder="Als ik slecht slaap, ben ik de volgende dag sneller boos."></textarea><div class="row"><button class="btn primary" style="flex:1" id="ntok">Bewaren ' + UI.check + '</button></div>', function(sh){
+        setTimeout(function(){ sh.querySelector('#nt').focus(); }, 300);
+        sh.querySelector('#ntok').addEventListener('click', function(){ var v = sh.querySelector('#nt').value.trim(); if (!v) return; S.notes.push(v); closeSheet(); render(); toast('Bewaard voor gesprek 3'); });
+      });
+    });
+    if (!HIG) return;
+    var board = el.querySelector('#board'), pop = null;
+    el.querySelectorAll('[data-b]').forEach(function(g){
+      g.addEventListener('click', function(e){
+        e.stopPropagation();
+        if (pop) pop.remove();
+        var s = stone(g.dataset.b), b = BOARD.filter(function(x){ return x.id === s.id; })[0];
+        var sv = board.querySelector('svg'), sc = sv.getBoundingClientRect().width / 393 / currentScale();
+        pop = document.createElement('div'); pop.className = 'pop';
+        pop.innerHTML = esc(word(s)) + (s.own ? '<small>' + esc(s.label) + '</small>' : '');
+        pop.style.left = (b.x * sc) + 'px'; pop.style.top = ((b.y - 120) * sc - b.r * sc - 6) + 'px';
+        board.appendChild(pop);
+      });
+    });
+    el.addEventListener('click', function(){ if (pop){ pop.remove(); pop = null; } });
+  }
+};
+
+SCREENS.experimenten = {
+  html: function(){
+    return '<div class="pad"><h1>Tiny experiments</h1><p class="lead">Kleine dingen die je uitprobeert, om<br>te zien wat helpt.</p><div class="grid2">' +
+      S.experiments.map(function(x){
+        var ink = 'var(--' + x.cat + '-ink)', st = '';
+        if (x.kind === 'days') st = 'dag ' + x.day + ' van ' + x.of + ' <span class="bar"><i style="width:' + (x.day / x.of * 100) + '%"></i></span>';
+        if (x.kind === 'count') st = x.count + ' keer gedaan';
+        if (x.kind === 'planned') st = 'start ' + x.start;
+        return '<button class="exp" data-x="' + x.id + '" style="background:var(--' + x.cat + '); color:' + ink + '"><h3>' + esc(x.title).replace(/^(\S+ \S+)\s/, '$1<br>') + '</h3>' +
+          '<svg class="ring" width="96" height="96" viewBox="0 0 96 96"><path d="' + shapeD(x.shape, 48, 48, 42) + '" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="2.4 2.6" stroke-linecap="round"/></svg>' +
+          '<span class="st">' + st + '</span></button>';
+      }).join('') +
+      '<button class="exp new" data-act="new"><span class="plus">' + UI.plus + '</span><h3>Nieuw<br>experiment</h3></button></div></div>';
+  },
+  wire: function(el){
+    el.querySelectorAll('[data-x]').forEach(function(b){ b.addEventListener('click', function(){ go('exp', { id: b.dataset.x }); }); });
+    on(el, 'new', newExpSheet);
+  }
+};
+function newExpSheet(){
+  var ok = S.stones.filter(function(s){ return s.status !== 'past-niet'; }), pick = ok[0].id, dur = '7 dagen';
+  openSheet('<h2>Nieuw experiment</h2><p>Wat wil je uitproberen? Hou het klein.</p><input class="field" id="xt" placeholder="bijvoorbeeld: 10 minuten lezen voor ik ga slapen" maxlength="40">' +
+    '<div class="label">Hoort bij</div><div class="chips" id="xs">' + ok.slice(0, 6).map(function(s){ return '<button class="chip" data-s="' + s.id + '">' + esc(word(s)) + '</button>'; }).join('') + '</div>' +
+    '<div class="label">Hoe lang</div><div class="chips" id="xd">' + ['7 dagen', '14 dagen', 'Zo vaak als ik wil'].map(function(d){ return '<button class="chip" data-d="' + d + '">' + d + '</button>'; }).join('') + '</div>' +
+    '<div class="row"><button class="btn primary" style="flex:1" id="xok">Start experiment ' + UI.arrowR + '</button></div>', function(sh){
+    function mark(){
+      sh.querySelectorAll('[data-s]').forEach(function(c){ var s = stone(c.dataset.s), on = c.dataset.s === pick; c.style.background = on ? 'var(--' + s.cat + ')' : '#FFF'; c.style.borderColor = on ? 'var(--' + s.cat + ')' : 'var(--line)'; c.style.color = on ? 'var(--' + s.cat + '-ink)' : ''; });
+      sh.querySelectorAll('[data-d]').forEach(function(c){ var on = c.dataset.d === dur; c.style.background = on ? '#2B2822' : '#FFF'; c.style.color = on ? '#FFF' : ''; c.style.borderColor = on ? '#2B2822' : 'var(--line)'; });
+    }
+    sh.querySelectorAll('[data-s]').forEach(function(c){ c.addEventListener('click', function(){ pick = c.dataset.s; mark(); }); });
+    sh.querySelectorAll('[data-d]').forEach(function(c){ c.addEventListener('click', function(){ dur = c.dataset.d; mark(); }); });
+    mark();
+    sh.querySelector('#xok').addEventListener('click', function(){
+      var t = sh.querySelector('#xt').value.trim(); if (!t){ sh.querySelector('#xt').focus(); return; }
+      var s = stone(pick), shapes = ['zon', 'bloem4', 'golf8', 'spikes10'];
+      S.experiments.push({ id: 'x' + Date.now(), title: t.charAt(0).toUpperCase() + t.slice(1), text: '', cat: s.cat, shape: shapes[S.experiments.length % 4], kind: dur === 'Zo vaak als ik wil' ? 'count' : 'days', day: 1, of: dur === '14 dagen' ? 14 : 7, count: 0, stone: pick });
+      closeSheet(); render(); toast('Je experiment is gestart');
+    });
+  });
+}
+
+SCREENS.exp = {
+  html: function(){
+    var x = S.experiments.filter(function(e){ return e.id === S.params.id; })[0], s = stone(x.stone);
+    var ink = 'var(--' + x.cat + '-ink)', mid = '', body = '';
+    if (x.kind === 'days'){
+      mid = '<span class="big">dag ' + x.day + '</span><span class="small">van ' + x.of + '</span>';
+      var names = ['ma', 'di', 'wo', 'do', 'vr', 'za', 'zo'];
+      body = '<p class="q">Hoe ging het gisteravond?</p><div class="rate">' + ['Ging goed', 'Een beetje', 'Lukte niet'].map(function(r){ var on = x.rating === r; return '<button data-rate="' + r + '" aria-pressed="' + on + '" style="' + (on ? 'background:' + ink + ';color:var(--' + x.cat + ')' : 'color:' + ink) + '">' + r + '</button>'; }).join('') + '</div>' +
+        '<div class="days">' + names.map(function(n, i){
+          var dayN = i + 1, done = dayN < x.day, today = dayN === x.day;
+          var c = done ? '<span class="d" style="background:' + ink + '">' + UI.check + '</span>' : today ? '<span class="d" style="border:2px solid ' + ink + '"></span>' : '<span class="d" style="border:2px dotted ' + ink + '"></span>';
+          return '<div class="day" style="color:' + ink + (today ? ';font-weight:800' : '') + '">' + c + n + '</div>';
+        }).join('') + '</div>';
+    } else if (x.kind === 'count'){
+      mid = '<span class="big">' + x.count + ' keer</span><span class="small">gedaan</span>';
+      body = '<p class="q">Heb je het vandaag gedaan?</p><div class="counter"><button class="btn" style="background:#FFF;color:' + ink + ';flex:1" data-act="plus">Ja, ik heb het gedaan ' + UI.check + '</button></div>';
+    } else {
+      mid = '<span class="big">over 4</span><span class="small">dagen</span>';
+      body = '<p class="q">Dit experiment begint ' + x.start + '.</p><div class="counter"><button class="btn" style="background:#FFF;color:' + ink + ';flex:1" data-act="now">Ik wil vandaag al beginnen</button></div>';
+    }
+    var lead = x.text || 'Een klein experiment om te zien wat helpt.';
+    return '<div class="pad xd" style="background:var(--' + x.cat + '); min-height:100%; padding-bottom:50px; color:' + ink + '">' +
+      '<button class="back" data-act="back" aria-label="Terug" style="color:' + ink + '">' + UI.chevL + '</button><h1>' + esc(x.title) + '</h1><p class="lead" style="color:' + (x.cat === 'krachten' ? '#FFF' : '#000') + '">' + esc(lead) + '</p>' +
+      '<div class="center"><svg width="190" height="190" viewBox="0 0 190 190"><path d="' + shapeD(x.shape, 95, 95, 86) + '" fill="none" stroke="currentColor" stroke-width="2.2" stroke-dasharray="2.6 3" stroke-linecap="round"/></svg><div class="txt">' + mid + '</div></div>' + body +
+      '<button class="belongs" data-act="stone" style="color:' + (x.cat === 'krachten' ? 'var(--krachten)' : ink) + '"><span class="k">Hoort bij</span><span class="w"><svg width="30" height="30" viewBox="0 0 30 30"><circle cx="16" cy="16" r="13" fill="var(--' + s.cat + '-rim)"/><circle cx="15" cy="15" r="13" fill="var(--' + s.cat + ')"/></svg>' + esc(word(s)) + '</span><svg class="go" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>';
+  },
+  wire: function(el){
+    var x = S.experiments.filter(function(e){ return e.id === S.params.id; })[0];
+    on(el, 'back', back);
+    el.querySelectorAll('[data-rate]').forEach(function(b){ b.addEventListener('click', function(){ x.rating = b.dataset.rate; go('exp', S.params, { replace: true }); }); });
+    on(el, 'plus', function(){ x.count++; go('exp', S.params, { replace: true }); toast('Goed bezig'); });
+    on(el, 'now', function(){ x.kind = 'days'; x.day = 1; x.of = 7; go('exp', S.params, { replace: true }); });
+    on(el, 'stone', function(){ S.history = []; go('patroon', { highlight: x.stone }, { replace: true }); });
+  }
+};
+/* go() met replace laat de geschiedenis staan */
+var _go = go;
+go = function(name, params, opts){
+  if (opts && opts.replace){ S.screen = name; S.params = params || {}; render(opts.back); return; }
+  _go(name, params, opts);
+};
+tabTo = function(id){ S.history = []; go(id, {}, { replace: true }); };
+
+function on(el, act, fn){ el.querySelectorAll('[data-act="' + act + '"]').forEach(function(b){ b.addEventListener('click', fn); }); }
+
+/* ---------------- schaal ---------------- */
+var stage = document.getElementById('stage');
+function currentScale(){ return parseFloat(stage.dataset.s || '1'); }
+function fit(){
+  var s = Math.min(1, (window.innerHeight - 80) / 872, (window.innerWidth - 40) / 413);
+  stage.style.transform = 'scale(' + s + ')'; stage.dataset.s = s;
+}
+window.addEventListener('resize', fit); fit();
+document.getElementById('reset').addEventListener('click', function(){ S = freshState(); render(); });
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeSheet(); });
+render();
+})();
+</script>
+</body>
+</html>
